@@ -26,26 +26,6 @@ La app debe poder **instalarse en el iPhone** desde Safari (Add to Home Screen) 
 
 **Estilo**: Limpio, profesional, intermedio — inspirado en apps fintech modernas como Nubank o apps de banca digital latinoamericana. No genérico, no corporativo aburrido.
 
-**Paleta**:
-- Fondo principal: `#0F1117` (casi negro)
-- Superficie/cards: `#1A1D27`
-- Acento primario: `#00C896` (verde esmeralda — representa dinero positivo)
-- Acento negativo: `#FF5757` (rojo coral — gastos/deudas)
-- Acento neutro/amarillo: `#FFB547` (metas/alertas)
-- Texto primario: `#F0F0F0`
-- Texto secundario: `#8A8FA8`
-
-**Tipografía** (Google Fonts):
-- Display/títulos: `DM Serif Display`
-- Body/UI: `DM Sans`
-
-**Componentes visuales**:
-- Cards con bordes sutiles `border: 1px solid rgba(255,255,255,0.06)`
-- Sombras suaves con color del acento: `box-shadow: 0 4px 24px rgba(0,200,150,0.08)`
-- Botón de acción rápida (FAB) flotante verde para agregar gastos/ingresos
-- Bottom navigation bar fija para iPhone (con safe-area-inset)
-- Animaciones suaves de entrada con `transition` y `opacity`
-- Números grandes y prominentes en el dashboard
 
 ---
 
