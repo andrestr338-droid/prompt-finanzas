@@ -3,6 +3,7 @@ const KEYS = {
   DEUDAS: 'fc_deudas',
   METAS: 'fc_metas',
   CONFIG: 'fc_config',
+  GASTOS_FIJOS: 'fc_gastos_fijos',
 }
 
 export { KEYS }

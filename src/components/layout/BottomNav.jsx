@@ -1,6 +1,7 @@
 const TABS = [
   { id: 'dashboard', label: 'Inicio', icono: '🏠' },
-  { id: 'transacciones', label: 'Movimientos', icono: '💸' },
+  { id: 'fijos', label: 'Fijos', icono: '📋' },
+  { id: 'transacciones', label: 'Gastos', icono: '💸' },
   { id: 'deudas', label: 'Deudas', icono: '💳' },
   { id: 'metas', label: 'Metas', icono: '🎯' },
   { id: 'reportes', label: 'Reportes', icono: '📊' },
@@ -20,8 +21,8 @@ export default function BottomNav({ tabActiva, onCambiar }) {
                 activa ? 'text-primary' : 'text-text-disabled'
               }`}
             >
-              <span className="text-xl leading-none mb-0.5">{tab.icono}</span>
-              <span className={`text-[10px] font-medium leading-none ${activa ? 'text-primary' : 'text-text-disabled'}`}>
+              <span className="text-lg leading-none mb-0.5">{tab.icono}</span>
+              <span className={`text-[9px] font-medium leading-none ${activa ? 'text-primary' : 'text-text-disabled'}`}>
                 {tab.label}
               </span>
             </button>

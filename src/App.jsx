@@ -3,7 +3,9 @@ import { useConfig } from '@/hooks/useConfig.js'
 import { useTransacciones } from '@/hooks/useTransacciones.js'
 import { useDeudas } from '@/hooks/useDeudas.js'
 import { useMetas } from '@/hooks/useMetas.js'
+import { useGastosFijos } from '@/hooks/useGastosFijos.js'
 import { cargarSemilla } from '@/data/semilla.js'
+import { getHoy } from '@/utils/formatters.js'
 import Onboarding from '@/components/onboarding/Onboarding.jsx'
 import BottomNav from '@/components/layout/BottomNav.jsx'
 import FAB from '@/components/layout/FAB.jsx'
@@ -13,19 +15,23 @@ import ModalTransaccion from '@/components/transacciones/ModalTransaccion.jsx'
 import Deudas from '@/components/deudas/Deudas.jsx'
 import Metas from '@/components/metas/Metas.jsx'
 import Reportes from '@/components/reportes/Reportes.jsx'
+import GastosFijos from '@/components/fijos/GastosFijos.jsx'
 
 export default function App() {
   const { config, updateConfig } = useConfig()
   const { transacciones, agregar: agregarT, eliminar: eliminarT } = useTransacciones()
   const { deudas, agregar: agregarD, eliminar: eliminarD, actualizar: actualizarD } = useDeudas()
-  const { metas, agregar: agregarM, eliminar: eliminarM, actualizar: actualizarM, abonar } = useMetas()
+  const { metas, agregar: agregarM, eliminar: eliminarM, abonar } = useMetas()
+  const { fijos, agregar: agregarF, eliminar: eliminarF, marcarPagado, desmarcar, sincronizarConDeudas } = useGastosFijos()
   const [tabActiva, setTabActiva] = useState('dashboard')
   const [modalT, setModalT] = useState({ open: false, tipo: 'gasto' })
   const [bannerDismissed, setBannerDismissed] = useState(() => !!localStorage.getItem('fc_banner_dismissed'))
 
   useEffect(() => { cargarSemilla() }, [])
 
-  // Banner de instalación iOS
+  // Sincronizar gastos fijos con deudas cada vez que cambien las deudas
+  useEffect(() => { sincronizarConDeudas(deudas) }, [deudas])
+
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent)
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches
   const mostrarBanner = isIOS && !isStandalone && !bannerDismissed
@@ -36,7 +42,44 @@ export default function App() {
 
   function abrirFAB(tipo) {
     setModalT({ open: true, tipo })
-    setTabActiva(prev => tipo === 'gasto' || tipo === 'ingreso' ? prev : 'metas')
+  }
+
+  // Cuando se tilda un gasto fijo: registrar transacción automáticamente
+  function handleTildar(id, mesKey, fijo) {
+    marcarPagado(id, mesKey)
+    // Registrar gasto automáticamente
+    agregarT({
+      tipo: 'gasto',
+      monto: fijo.monto,
+      categoria: fijo.categoria,
+      descripcion: fijo.nombre,
+      fecha: getHoy(),
+      tipoIngreso: null,
+      fuente: null,
+    })
+    // Si es cuota de deuda, reducir el saldo de la deuda
+    if (fijo.tipo === 'deuda' && fijo.deudaId) {
+      const deuda = deudas.find(d => d.id === fijo.deudaId)
+      if (deuda) {
+        const nuevoSaldo = Math.max(0, deuda.saldoActual - fijo.monto)
+        actualizarD(fijo.deudaId, { saldoActual: nuevoSaldo })
+      }
+    }
+  }
+
+  // Cuando se destilda: eliminar la última transacción automática del fijo en este mes
+  function handleDestildar(id, mesKey) {
+    desmarcar(id, mesKey)
+  }
+
+  // Agregar deuda y sincronizar fijos
+  function handleAgregarDeuda(d) {
+    agregarD(d)
+  }
+
+  // Eliminar deuda y limpiar fijo asociado
+  function handleEliminarDeuda(id) {
+    eliminarD(id)
   }
 
   if (!config.onboardingCompleto) {
@@ -45,37 +88,35 @@ export default function App() {
 
   return (
     <div className="relative min-h-dvh bg-background overflow-hidden">
-      {/* Contenido principal */}
       <main className="h-dvh overflow-hidden flex flex-col">
         <div className="flex-1 overflow-y-auto">
           {tabActiva === 'dashboard' && (
             <Dashboard transacciones={transacciones} deudas={deudas} metas={metas} />
           )}
-          {tabActiva === 'transacciones' && (
-            <Transacciones
-              transacciones={transacciones}
-              onAgregar={agregarT}
-              onEliminar={eliminarT}
+          {tabActiva === 'fijos' && (
+            <GastosFijos
+              fijos={fijos}
+              onAgregar={agregarF}
+              onEliminar={eliminarF}
+              onTildar={handleTildar}
+              onDestildar={handleDestildar}
             />
+          )}
+          {tabActiva === 'transacciones' && (
+            <Transacciones transacciones={transacciones} onAgregar={agregarT} onEliminar={eliminarT} />
           )}
           {tabActiva === 'deudas' && (
             <Deudas
               deudas={deudas}
-              onAgregar={agregarD}
-              onEliminar={eliminarD}
+              onAgregar={handleAgregarDeuda}
+              onEliminar={handleEliminarDeuda}
               estrategia={config.estrategiaDeuda}
               onCambiarEstrategia={e => updateConfig({ estrategiaDeuda: e })}
             />
           )}
           {tabActiva === 'metas' && (
-            <Metas
-              metas={metas}
-              transacciones={transacciones}
-              deudas={deudas}
-              onAgregar={agregarM}
-              onEliminar={eliminarM}
-              onAbonar={abonar}
-            />
+            <Metas metas={metas} transacciones={transacciones} deudas={deudas}
+              onAgregar={agregarM} onEliminar={eliminarM} onAbonar={abonar} />
           )}
           {tabActiva === 'reportes' && (
             <Reportes transacciones={transacciones} deudas={deudas} metas={metas} />
@@ -83,7 +124,6 @@ export default function App() {
         </div>
       </main>
 
-      {/* FAB — solo visible fuera de reportes */}
       {tabActiva !== 'reportes' && (
         <FAB
           onAgregarGasto={() => abrirFAB('gasto')}
@@ -92,10 +132,8 @@ export default function App() {
         />
       )}
 
-      {/* Bottom Nav */}
       <BottomNav tabActiva={tabActiva} onCambiar={setTabActiva} />
 
-      {/* Modal transacción desde FAB */}
       <ModalTransaccion
         isOpen={modalT.open}
         onClose={() => setModalT({ open: false, tipo: 'gasto' })}
@@ -103,7 +141,6 @@ export default function App() {
         tipoInicial={modalT.tipo}
       />
 
-      {/* Banner instalación iOS */}
       {mostrarBanner && (
         <div className="fixed bottom-20 left-4 right-4 z-50 bg-elevated border border-border rounded-card p-3 flex items-start gap-3 shadow-lg">
           <span className="text-2xl">📱</span>
