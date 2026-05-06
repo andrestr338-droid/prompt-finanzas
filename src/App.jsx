@@ -113,7 +113,7 @@ export default function App() {
             />
           )}
           {tabActiva === 'transacciones' && (
-            <Transacciones transacciones={transacciones} onAgregar={agregarT} onEliminar={eliminarT} />
+            <Transacciones transacciones={transacciones} deudas={deudas} onAgregar={agregarT} onEliminar={eliminarT} />
           )}
           {tabActiva === 'deudas' && (
             <Deudas
@@ -149,6 +149,7 @@ export default function App() {
         onClose={() => setModalT({ open: false, tipo: 'gasto' })}
         onGuardar={agregarT}
         tipoInicial={modalT.tipo}
+        deudas={deudas}
       />
 
       {mostrarBanner && (

@@ -23,7 +23,14 @@ export default function TransaccionItem({ transaccion, onEliminar }) {
           <p className="text-text-primary text-sm font-medium truncate">
             {descripcion || categoria}
           </p>
-          <p className="text-text-disabled text-xs capitalize">{categoria}</p>
+          <div className="flex items-center gap-1.5">
+            <p className="text-text-disabled text-xs capitalize">{categoria}</p>
+            {transaccion.metodoPago === 'tc' && transaccion.tcNombre && (
+              <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-chip">
+                💳 {transaccion.tcNombre}
+              </span>
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <span className={`font-serif text-base font-normal ${esIngreso ? 'text-primary' : 'text-destructive'}`}>
