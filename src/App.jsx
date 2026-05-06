@@ -4,6 +4,7 @@ import { useTransacciones } from '@/hooks/useTransacciones.js'
 import { useDeudas } from '@/hooks/useDeudas.js'
 import { useMetas } from '@/hooks/useMetas.js'
 import { useGastosFijos } from '@/hooks/useGastosFijos.js'
+import { useTarjetas } from '@/hooks/useTarjetas.js'
 import { cargarSemilla } from '@/data/semilla.js'
 import { getHoy } from '@/utils/formatters.js'
 import Onboarding from '@/components/onboarding/Onboarding.jsx'
@@ -23,6 +24,7 @@ export default function App() {
   const { deudas, agregar: agregarD, eliminar: eliminarD, actualizar: actualizarD } = useDeudas()
   const { metas, agregar: agregarM, eliminar: eliminarM, abonar } = useMetas()
   const { fijos, agregar: agregarF, eliminar: eliminarF, marcarPagado, desmarcar, sincronizarConDeudas } = useGastosFijos()
+  const { tarjetas, agregar: agregarTarjeta, eliminar: eliminarTarjeta } = useTarjetas()
   const [tabActiva, setTabActiva] = useState('dashboard')
   const [bannerDismissed, setBannerDismissed] = useState(() => !!localStorage.getItem('fc_banner_dismissed'))
 
@@ -101,7 +103,8 @@ export default function App() {
       <main className="h-dvh overflow-hidden flex flex-col">
         <div className="flex-1 overflow-y-auto">
           {tabActiva === 'dashboard' && (
-            <Dashboard transacciones={transacciones} deudas={deudas} metas={metas} />
+            <Dashboard transacciones={transacciones} deudas={deudas} metas={metas}
+              tarjetas={tarjetas} onAgregarTarjeta={agregarTarjeta} onEliminarTarjeta={eliminarTarjeta} />
           )}
           {tabActiva === 'fijos' && (
             <GastosFijos
@@ -113,7 +116,7 @@ export default function App() {
             />
           )}
           {tabActiva === 'transacciones' && (
-            <Transacciones transacciones={transacciones} deudas={deudas} onAgregar={agregarT} onEliminar={eliminarT} />
+            <Transacciones transacciones={transacciones} tarjetas={tarjetas} onAgregar={agregarT} onEliminar={eliminarT} />
           )}
           {tabActiva === 'deudas' && (
             <Deudas
@@ -149,7 +152,7 @@ export default function App() {
         onClose={() => setModalT({ open: false, tipo: 'gasto' })}
         onGuardar={agregarT}
         tipoInicial={modalT.tipo}
-        deudas={deudas}
+        tarjetas={tarjetas}
       />
 
       {mostrarBanner && (

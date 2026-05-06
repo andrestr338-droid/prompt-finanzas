@@ -9,7 +9,7 @@ const TABS = [
   { id: 'ingreso', label: 'Ingresos' },
 ]
 
-export default function Transacciones({ transacciones, deudas = [], onAgregar, onEliminar }) {
+export default function Transacciones({ transacciones, tarjetas = [], onAgregar, onEliminar }) {
   const { mes: mesHoy, año: añoHoy } = getMesActual()
   const [tab, setTab] = useState('todo')
   const [mes, setMes] = useState(mesHoy)
@@ -77,7 +77,7 @@ export default function Transacciones({ transacciones, deudas = [], onAgregar, o
         onClose={() => setModal(false)}
         onGuardar={onAgregar}
         tipoInicial={tipoModal}
-        deudas={deudas}
+        tarjetas={tarjetas}
       />
     </div>
   )

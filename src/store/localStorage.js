@@ -4,6 +4,7 @@ const KEYS = {
   METAS: 'fc_metas',
   CONFIG: 'fc_config',
   GASTOS_FIJOS: 'fc_gastos_fijos',
+  TARJETAS: 'fc_tarjetas',
 }
 
 export { KEYS }

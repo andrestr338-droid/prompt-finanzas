@@ -28,7 +28,7 @@ const INIT = {
   metodoPago: 'efectivo', tcId: null, tcNombre: null,
 }
 
-export default function ModalTransaccion({ isOpen, onClose, onGuardar, tipoInicial, deudas = [] }) {
+export default function ModalTransaccion({ isOpen, onClose, onGuardar, tipoInicial, tarjetas = [] }) {
   const [form, setForm] = useState(INIT)
 
   useEffect(() => {
@@ -36,7 +36,6 @@ export default function ModalTransaccion({ isOpen, onClose, onGuardar, tipoInici
   }, [isOpen, tipoInicial])
 
   const cats = form.tipo === 'gasto' ? CATS_GASTO : CATS_INGRESO
-  const tarjetas = deudas.filter(d => d.tipo === 'tarjeta' && d.saldoActual > 0)
 
   function set(field, val) { setForm(p => ({ ...p, [field]: val })) }
 
@@ -53,8 +52,8 @@ export default function ModalTransaccion({ isOpen, onClose, onGuardar, tipoInici
     setForm(p => ({ ...p, metodoPago: metodo, tcId: null, tcNombre: null }))
   }
 
-  function handleTC(deuda) {
-    setForm(p => ({ ...p, tcId: deuda.id, tcNombre: deuda.nombre }))
+  function handleTC(tc) {
+    setForm(p => ({ ...p, tcId: tc.id, tcNombre: tc.nombre }))
   }
 
   function guardar() {
@@ -114,9 +113,11 @@ export default function ModalTransaccion({ isOpen, onClose, onGuardar, tipoInici
           {form.metodoPago === 'tc' && (
             <div>
               {tarjetas.length === 0 ? (
-                <p className="text-warning text-xs text-center py-2">
-                  No tienes tarjetas de crédito registradas en Deudas.
-                </p>
+                <div className="bg-warning/10 border border-warning/30 rounded-card p-3">
+                  <p className="text-warning text-xs text-center">
+                    Aún no tienes tarjetas guardadas. Ve a Inicio → Mis tarjetas para agregarlas.
+                  </p>
+                </div>
               ) : (
                 <div className="flex flex-col gap-2">
                   {tarjetas.map(tc => (
