@@ -24,10 +24,20 @@ export default function App() {
   const { metas, agregar: agregarM, eliminar: eliminarM, abonar } = useMetas()
   const { fijos, agregar: agregarF, eliminar: eliminarF, marcarPagado, desmarcar, sincronizarConDeudas } = useGastosFijos()
   const [tabActiva, setTabActiva] = useState('dashboard')
-  const [modalT, setModalT] = useState({ open: false, tipo: 'gasto' })
   const [bannerDismissed, setBannerDismissed] = useState(() => !!localStorage.getItem('fc_banner_dismissed'))
 
-  useEffect(() => { cargarSemilla() }, [])
+  // Detectar ?add=gasto o ?add=ingreso en la URL (para atajos de iOS)
+  const paramAdd = new URLSearchParams(window.location.search).get('add')
+  const [modalT, setModalT] = useState(() => {
+    if (paramAdd === 'gasto' || paramAdd === 'ingreso') return { open: true, tipo: paramAdd }
+    return { open: false, tipo: 'gasto' }
+  })
+
+  useEffect(() => {
+    cargarSemilla()
+    // Limpiar el parámetro de la URL sin recargar la página
+    if (paramAdd) window.history.replaceState({}, '', window.location.pathname)
+  }, [])
 
   // Sincronizar gastos fijos con deudas cada vez que cambien las deudas
   useEffect(() => { sincronizarConDeudas(deudas) }, [deudas])
