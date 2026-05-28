@@ -1,12 +1,15 @@
 import { useState } from 'react'
 import ListaTransacciones from './ListaTransacciones.jsx'
 import ModalTransaccion from './ModalTransaccion.jsx'
+import PresupuestoMes from './PresupuestoMes.jsx'
+import { usePresupuesto } from '@/hooks/usePresupuesto.js'
 import { getMesActual, getMesNombre } from '@/utils/formatters.js'
 
 const TABS = [
   { id: 'todo', label: 'Todo' },
   { id: 'gasto', label: 'Gastos' },
   { id: 'ingreso', label: 'Ingresos' },
+  { id: 'presupuesto', label: 'Presupuesto' },
 ]
 
 export default function Transacciones({ transacciones, tarjetas = [], onAgregar, onEliminar }) {
@@ -16,6 +19,7 @@ export default function Transacciones({ transacciones, tarjetas = [], onAgregar,
   const [año, setAño] = useState(añoHoy)
   const [modal, setModal] = useState(false)
   const [tipoModal, setTipoModal] = useState('gasto')
+  const { limites, setLimite } = usePresupuesto()
 
   function abrirModal(tipo = 'gasto') {
     setTipoModal(tipo)
@@ -45,12 +49,12 @@ export default function Transacciones({ transacciones, tarjetas = [], onAgregar,
         </div>
 
         {/* Sub-tabs */}
-        <div className="flex gap-2">
+        <div className="flex gap-2 overflow-x-auto pb-0.5 scrollbar-none">
           {TABS.map(t => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`px-4 py-2 rounded-chip text-sm font-medium transition-colors ${
+              className={`flex-shrink-0 px-4 py-2 rounded-chip text-sm font-medium transition-colors ${
                 tab === t.id ? 'bg-primary text-white' : 'bg-surface text-text-secondary'
               }`}
             >
@@ -60,16 +64,26 @@ export default function Transacciones({ transacciones, tarjetas = [], onAgregar,
         </div>
       </div>
 
-      {/* Lista */}
+      {/* Content */}
       <div className="flex-1 overflow-y-auto px-5 pb-safe">
-        <ListaTransacciones
-          transacciones={transacciones}
-          filtroTipo={tab}
-          mes={mes}
-          año={año}
-          onEliminar={onEliminar}
-          onAgregar={() => abrirModal('gasto')}
-        />
+        {tab === 'presupuesto' ? (
+          <PresupuestoMes
+            transacciones={transacciones}
+            mes={mes}
+            año={año}
+            limites={limites}
+            setLimite={setLimite}
+          />
+        ) : (
+          <ListaTransacciones
+            transacciones={transacciones}
+            filtroTipo={tab}
+            mes={mes}
+            año={año}
+            onEliminar={onEliminar}
+            onAgregar={() => abrirModal('gasto')}
+          />
+        )}
       </div>
 
       <ModalTransaccion
