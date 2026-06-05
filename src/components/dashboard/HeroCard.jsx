@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { formatCOP, getMesNombre, getMesActual } from '@/utils/formatters.js'
+import { formatCOP, getMesNombre } from '@/utils/formatters.js'
 
 function useContador(objetivo, duracion = 800) {
   const [valor, setValor] = useState(0)
@@ -21,8 +21,7 @@ function useContador(objetivo, duracion = 800) {
   return valor
 }
 
-export default function HeroCard({ saldo, ingresos, gastos }) {
-  const { mes, año } = getMesActual()
+export default function HeroCard({ saldo, ingresos, gastos, mes, año, esMesActual, onPrevMes, onSigMes }) {
   const saldoAnimado = useContador(Math.abs(saldo))
   const positivo = saldo >= 0
 
@@ -42,7 +41,7 @@ export default function HeroCard({ saldo, ingresos, gastos }) {
         {saldo < 0 ? '-' : ''}$ {saldoAnimado.toLocaleString('es-CO')}
       </div>
 
-      <div className="flex gap-4">
+      <div className="flex gap-4 mb-4">
         <div className="flex-1 bg-black/20 rounded-card p-3">
           <p className="text-text-secondary text-[10px] uppercase tracking-wider mb-1">Ingresos</p>
           <p className="text-primary font-serif text-base">{formatCOP(ingresos)}</p>
@@ -51,6 +50,27 @@ export default function HeroCard({ saldo, ingresos, gastos }) {
           <p className="text-text-secondary text-[10px] uppercase tracking-wider mb-1">Gastos</p>
           <p className="text-destructive font-serif text-base">{formatCOP(gastos)}</p>
         </div>
+      </div>
+
+      <div className="flex items-center justify-between">
+        <button
+          onClick={onPrevMes}
+          className="w-8 h-8 rounded-full bg-black/20 flex items-center justify-center text-text-secondary hover:opacity-70 transition"
+          aria-label="Mes anterior"
+        >
+          ‹
+        </button>
+        <p className="text-text-secondary text-xs font-medium">
+          {esMesActual ? 'Mes actual' : getMesNombre(mes) + ' ' + año}
+        </p>
+        <button
+          onClick={onSigMes}
+          disabled={esMesActual}
+          className="w-8 h-8 rounded-full bg-black/20 flex items-center justify-center text-text-secondary hover:opacity-70 transition disabled:opacity-25 disabled:cursor-not-allowed"
+          aria-label="Mes siguiente"
+        >
+          ›
+        </button>
       </div>
     </div>
   )
