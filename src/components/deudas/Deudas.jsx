@@ -10,7 +10,7 @@ export default function Deudas({ deudas, onAgregar, onEliminar, estrategia, onCa
   const [modal, setModal] = useState(false)
 
   const totalDeuda = deudas.reduce((s, d) => s + d.saldoActual, 0)
-  const totalCuotas = deudas.reduce((s, d) => s + d.cuotaMensual, 0)
+  const totalCuotas = deudas.reduce((s, d) => s + d.cuotaMensual + (d.cuotaManejo || 0), 0)
 
   return (
     <div className="flex flex-col h-full">
@@ -30,7 +30,7 @@ export default function Deudas({ deudas, onAgregar, onEliminar, estrategia, onCa
               <p className="text-destructive font-serif text-lg">{formatCOP(totalDeuda)}</p>
             </div>
             <div className="flex-1 bg-surface rounded-card border border-border px-4 py-3">
-              <p className="text-text-disabled text-[10px] uppercase tracking-wider">Cuota mensual</p>
+              <p className="text-text-disabled text-[10px] uppercase tracking-wider">Pago mensual total</p>
               <p className="text-text-primary font-serif text-lg">{formatCOP(totalCuotas)}</p>
             </div>
           </div>

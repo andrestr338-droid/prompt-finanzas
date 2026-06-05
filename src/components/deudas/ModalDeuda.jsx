@@ -11,7 +11,7 @@ const TIPOS = [
   { id: 'otro', emoji: '📦', label: 'Otro' },
 ]
 
-const INIT = { nombre: '', tipo: '', saldoTotal: '', saldoActual: '', tasaInteres: '', cuotaMensual: '', fechaInicio: getHoy(), notas: '' }
+const INIT = { nombre: '', tipo: '', saldoTotal: '', saldoActual: '', tasaInteres: '', cuotaMensual: '', cuotaManejo: '', fechaInicio: getHoy(), notas: '' }
 
 export default function ModalDeuda({ isOpen, onClose, onGuardar }) {
   const [form, setForm] = useState(INIT)
@@ -36,6 +36,7 @@ export default function ModalDeuda({ isOpen, onClose, onGuardar }) {
       saldoActual: parseCOP(form.saldoActual),
       tasaInteres: parseFloat(form.tasaInteres) || 0,
       cuotaMensual: parseCOP(form.cuotaMensual),
+      cuotaManejo: form.tipo === 'tarjeta' ? parseCOP(form.cuotaManejo) : 0,
       fechaInicio: form.fechaInicio,
       notas: form.notas,
     })
@@ -82,6 +83,18 @@ export default function ModalDeuda({ isOpen, onClose, onGuardar }) {
             </div>
           </div>
         ))}
+
+        {form.tipo === 'tarjeta' && (
+          <div>
+            <label className="text-text-secondary text-xs mb-2 block">Cuota de manejo (mensual)</label>
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary font-serif">$</span>
+              <input type="tel" inputMode="numeric" placeholder="0" value={form.cuotaManejo} onChange={handleMonto('cuotaManejo')}
+                className="w-full bg-surface border border-border rounded-card pl-9 pr-4 py-3 text-text-primary text-base focus:outline-none focus:border-primary font-serif" />
+            </div>
+            <p className="text-text-disabled text-[10px] mt-1">Se suma al pago mensual pero no reduce el saldo de la deuda.</p>
+          </div>
+        )}
 
         <div>
           <label className="text-text-secondary text-xs mb-2 block">Tasa de interés mensual (%)</label>

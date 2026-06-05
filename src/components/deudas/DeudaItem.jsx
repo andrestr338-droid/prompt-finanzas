@@ -8,6 +8,8 @@ const EMOJIS_TIPO = { tarjeta:'💳', bancario:'🏦', personal:'👤', hipoteca
 export default function DeudaItem({ deuda, onEliminar }) {
   const [confirmar, setConfirmar] = useState(false)
   const pct = deuda.saldoTotal > 0 ? Math.round(((deuda.saldoTotal - deuda.saldoActual) / deuda.saldoTotal) * 100) : 0
+  const cuotaManejo = deuda.cuotaManejo || 0
+  const pagoTotal = deuda.cuotaMensual + cuotaManejo
 
   return (
     <>
@@ -31,8 +33,13 @@ export default function DeudaItem({ deuda, onEliminar }) {
             <p className="text-destructive font-serif text-base">{formatCOP(deuda.saldoActual)}</p>
           </div>
           <div className="text-right">
-            <p className="text-text-disabled text-[10px] uppercase tracking-wider">Cuota mensual</p>
-            <p className="text-text-primary font-serif text-base">{formatCOP(deuda.cuotaMensual)}</p>
+            <p className="text-text-disabled text-[10px] uppercase tracking-wider">Pago mensual</p>
+            <p className="text-text-primary font-serif text-base">{formatCOP(pagoTotal)}</p>
+            {cuotaManejo > 0 && (
+              <p className="text-text-disabled text-[10px] mt-0.5">
+                cuota {formatCOP(deuda.cuotaMensual)} + manejo {formatCOP(cuotaManejo)}
+              </p>
+            )}
           </div>
           <div className="text-right">
             <p className="text-text-disabled text-[10px] uppercase tracking-wider">Pagado</p>
