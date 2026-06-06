@@ -5,8 +5,9 @@ import { useDeudas } from '@/hooks/useDeudas.js'
 import { useMetas } from '@/hooks/useMetas.js'
 import { useGastosFijos } from '@/hooks/useGastosFijos.js'
 import { useTarjetas } from '@/hooks/useTarjetas.js'
+import { useGastosTarjeta } from '@/hooks/useGastosTarjeta.js'
 import { cargarSemilla } from '@/data/semilla.js'
-import { getHoy } from '@/utils/formatters.js'
+import { getHoy, getMesNombre } from '@/utils/formatters.js'
 import Onboarding from '@/components/onboarding/Onboarding.jsx'
 import BottomNav from '@/components/layout/BottomNav.jsx'
 import FAB from '@/components/layout/FAB.jsx'
@@ -25,10 +26,10 @@ export default function App() {
   const { metas, agregar: agregarM, eliminar: eliminarM, abonar } = useMetas()
   const { fijos, agregar: agregarF, eliminar: eliminarF, marcarPagado, desmarcar, sincronizarConDeudas } = useGastosFijos()
   const { tarjetas, agregar: agregarTarjeta, eliminar: eliminarTarjeta } = useTarjetas()
+  const { gastos: gastosTarjeta, agregar: agregarGT, eliminar: eliminarGT, marcarPagado: marcarPagadoGT } = useGastosTarjeta()
   const [tabActiva, setTabActiva] = useState('dashboard')
   const [bannerDismissed, setBannerDismissed] = useState(() => !!localStorage.getItem('fc_banner_dismissed'))
 
-  // Detectar ?add=gasto o ?add=ingreso en la URL (para atajos de iOS)
   const paramAdd = new URLSearchParams(window.location.search).get('add')
   const [modalT, setModalT] = useState(() => {
     if (paramAdd === 'gasto' || paramAdd === 'ingreso') return { open: true, tipo: paramAdd }
@@ -37,11 +38,9 @@ export default function App() {
 
   useEffect(() => {
     cargarSemilla()
-    // Limpiar el parámetro de la URL sin recargar la página
     if (paramAdd) window.history.replaceState({}, '', window.location.pathname)
   }, [])
 
-  // Sincronizar gastos fijos con deudas cada vez que cambien las deudas
   useEffect(() => { sincronizarConDeudas(deudas) }, [deudas])
 
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent)
@@ -56,10 +55,32 @@ export default function App() {
     setModalT({ open: true, tipo })
   }
 
-  // Cuando se tilda un gasto fijo: registrar transacción automáticamente
+  // Gastos en tarjeta van a su propio store; el resto a transacciones normales
+  function handleAgregarTransaccion(t) {
+    if (t.tipo === 'gasto' && t.metodoPago === 'tc') {
+      agregarGT(t)
+    } else {
+      agregarT(t)
+    }
+  }
+
+  // Cuando se marca el pago de una tarjeta: crear transacción real que suma al mes
+  function handlePagarTarjeta(tcId, tcNombre, total, mes, año) {
+    marcarPagadoGT(tcId, mes, año)
+    agregarT({
+      tipo: 'gasto',
+      monto: total,
+      categoria: 'deuda',
+      descripcion: `Pago tarjeta ${tcNombre} — ${getMesNombre(mes)} ${año}`,
+      fecha: getHoy(),
+      metodoPago: 'efectivo',
+      tcId: null,
+      tcNombre: null,
+    })
+  }
+
   function handleTildar(id, mesKey, fijo) {
     marcarPagado(id, mesKey)
-    // Registrar gasto automáticamente
     agregarT({
       tipo: 'gasto',
       monto: fijo.monto,
@@ -69,7 +90,6 @@ export default function App() {
       tipoIngreso: null,
       fuente: null,
     })
-    // Si es cuota de deuda, reducir el saldo de la deuda
     if (fijo.tipo === 'deuda' && fijo.deudaId) {
       const deuda = deudas.find(d => d.id === fijo.deudaId)
       if (deuda) {
@@ -79,17 +99,14 @@ export default function App() {
     }
   }
 
-  // Cuando se destilda: eliminar la última transacción automática del fijo en este mes
   function handleDestildar(id, mesKey) {
     desmarcar(id, mesKey)
   }
 
-  // Agregar deuda y sincronizar fijos
   function handleAgregarDeuda(d) {
     agregarD(d)
   }
 
-  // Eliminar deuda y limpiar fijo asociado
   function handleEliminarDeuda(id) {
     eliminarD(id)
   }
@@ -116,7 +133,15 @@ export default function App() {
             />
           )}
           {tabActiva === 'transacciones' && (
-            <Transacciones transacciones={transacciones} tarjetas={tarjetas} onAgregar={agregarT} onEliminar={eliminarT} />
+            <Transacciones
+              transacciones={transacciones}
+              tarjetas={tarjetas}
+              gastosTarjeta={gastosTarjeta}
+              onAgregar={handleAgregarTransaccion}
+              onEliminar={eliminarT}
+              onEliminarGastoTarjeta={eliminarGT}
+              onPagarTarjeta={handlePagarTarjeta}
+            />
           )}
           {tabActiva === 'deudas' && (
             <Deudas
@@ -150,7 +175,7 @@ export default function App() {
       <ModalTransaccion
         isOpen={modalT.open}
         onClose={() => setModalT({ open: false, tipo: 'gasto' })}
-        onGuardar={agregarT}
+        onGuardar={handleAgregarTransaccion}
         tipoInicial={modalT.tipo}
         tarjetas={tarjetas}
       />

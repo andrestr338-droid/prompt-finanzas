@@ -2,6 +2,7 @@ import { useState } from 'react'
 import ListaTransacciones from './ListaTransacciones.jsx'
 import ModalTransaccion from './ModalTransaccion.jsx'
 import PresupuestoMes from './PresupuestoMes.jsx'
+import GastosTarjeta from './GastosTarjeta.jsx'
 import { usePresupuesto } from '@/hooks/usePresupuesto.js'
 import { getMesActual, getMesNombre } from '@/utils/formatters.js'
 
@@ -9,10 +10,14 @@ const TABS = [
   { id: 'todo', label: 'Todo' },
   { id: 'gasto', label: 'Gastos' },
   { id: 'ingreso', label: 'Ingresos' },
+  { id: 'tarjetas', label: '💳 Tarjetas' },
   { id: 'presupuesto', label: 'Presupuesto' },
 ]
 
-export default function Transacciones({ transacciones, tarjetas = [], onAgregar, onEliminar }) {
+export default function Transacciones({
+  transacciones, tarjetas = [], gastosTarjeta = [],
+  onAgregar, onEliminar, onEliminarGastoTarjeta, onPagarTarjeta,
+}) {
   const { mes: mesHoy, año: añoHoy } = getMesActual()
   const [tab, setTab] = useState('todo')
   const [mes, setMes] = useState(mesHoy)
@@ -66,7 +71,15 @@ export default function Transacciones({ transacciones, tarjetas = [], onAgregar,
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto px-5 pb-safe">
-        {tab === 'presupuesto' ? (
+        {tab === 'tarjetas' ? (
+          <GastosTarjeta
+            gastos={gastosTarjeta}
+            mes={mes}
+            año={año}
+            onPagarTarjeta={onPagarTarjeta}
+            onEliminar={onEliminarGastoTarjeta}
+          />
+        ) : tab === 'presupuesto' ? (
           <PresupuestoMes
             transacciones={transacciones}
             mes={mes}

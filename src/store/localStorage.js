@@ -6,6 +6,7 @@ const KEYS = {
   GASTOS_FIJOS: 'fc_gastos_fijos',
   TARJETAS: 'fc_tarjetas',
   PRESUPUESTO: 'fc_presupuesto',
+  GASTOS_TARJETA: 'fc_gastos_tarjeta',
 }
 
 export { KEYS }
